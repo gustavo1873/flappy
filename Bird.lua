@@ -1,6 +1,6 @@
 Bird = Class{}
 
-local GRAVITY = 15
+local GRAVITY = 5
 
 function Bird:init()
     -- bird image and methods to get width and height
@@ -20,7 +20,7 @@ function Bird:update(dt)
     self.dy = self.dy + GRAVITY * dt
 
     if love.keyboard.wasPressed('space') then
-        self.dy = -3
+        self.dy = -1
     end
 
     -- apply current velocity to Y position
