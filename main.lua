@@ -19,7 +19,8 @@ local groundScroll = 0
 local BACKGROUND_SCROLL_SPEED = 30
 local GROUND_SCROLL_SPEED = 60
 
-local BACKGROUD_LOOPING_POINT = 413
+local BACKGROUND_LOOPING_POINT = 413
+local GROUND_LOOPING_POINT = 514
 
 local bird = Bird()
 
@@ -30,6 +31,8 @@ local pipePairs = {}
 local spawnTimer = 0
 
 local lastY = -PIPE_HEIGHT + math.random(80) + 20
+
+local scrolling = true
 
 function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -68,32 +71,46 @@ function love.keyboard.wasPressed(key)
 end
 
 function love.update(dt)
-    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUD_LOOPING_POINT
+    if scrolling then
+        backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
     
-    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+        groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
 
-    spawnTimer = spawnTimer + dt
+        spawnTimer = spawnTimer + dt
     
-    if spawnTimer > 2 then
-        local y = math.max(-PIPE_HEIGHT + 10, 
+        if spawnTimer > 2 then
+            local y = math.max(-PIPE_HEIGHT + 10, 
             math.min(lastY + math.random(-35, 35), VIRTUAL_HEIGHT - 90 - PIPE_HEIGHT))
-        lastY = y
+            lastY = y
     
-        table.insert(pipePairs, PipePair(y))
-        spawnTimer = 0
-    end
+            table.insert(pipePairs, PipePair(y))
+            spawnTimer = 0
+        end
     
-    bird:update(dt)
+        bird:update(dt)
 
-    for k, pipe in pairs(pipePairs) do
-        pipe:update(dt)
+        for k, pair in pairs(pipePairs) do
+            pair:update(dt)
 
-        if pipe.x < -PIPE_WIDTH then
-            table.remove(pipePairs, k)
+            for l, pipe in pairs(pair.pipes) do
+                if bird:collides(pipe) then
+                    -- pause the game to show collision
+                    scrolling = false
+                end
+            end
+
+            if pair.x < -PIPE_WIDTH then
+                pair.remove = true
+            end
+        end
+        for k, pair in pairs(pipePairs) do
+            if pair.remove then
+                table.remove(pipePairs, k)
+            end
         end
     end
- -- reset input after space is pressed so the bird doesn't fly up forever
-    love.keyboard.keysPressed = {}
+    -- reset input after space is pressed so the bird doesn't fly up forever
+        love.keyboard.keysPressed = {}
 end
 
 function love.draw()
