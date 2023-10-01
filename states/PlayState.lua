@@ -20,7 +20,6 @@ end
 function PlayState:update(dt)
     self.timer = self.timer + dt
 
-    -- spawns 2 more pipes every 1.5s
     if self.timer > 2 then
         local y = math.max(-PIPE_HEIGHT + 10, 
             math.min(self.lastY + math.random(-20, 20), VIRTUAL_HEIGHT - 90 - PIPE_HEIGHT))
